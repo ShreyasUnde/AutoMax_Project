@@ -1,3 +1,4 @@
  # Ignore large files
 src/db.zip
 src/main/static/videos/*.mp4
+"*.mp4" 
