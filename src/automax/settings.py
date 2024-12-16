@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django_filters",
     "users",
     "localflavor",
+    "django_localflavor_us",
 ]
 #Django Crispy Forms Settings
 CRISPY_TEMPLATE_PACK = 'bootstrap4'

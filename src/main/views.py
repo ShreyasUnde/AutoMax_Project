@@ -6,8 +6,10 @@ from .forms import ListingForm
 from users.forms import LocationForm
 from .filters import ListingFilter
 from django.contrib import messages 
-from imp import reload
+from importlib import reload
 from django.core.mail import send_mail
+import logging
+
 
 def main(request):
     # return HttpResponse("Hello Welocome To Main Page")
@@ -120,23 +122,45 @@ def like_listing_view(request, id):
         'is_liked_by_user': created,
     })
 
+logger = logging.getLogger(__name__)  # Initialize a logger for better error handling
+
 @login_required
 def inquire_listing_using_email(request, id):
+    # Retrieve the listing based on the ID or return a 404 error
     listing = get_object_or_404(Listing, id=id)
     try:
-        emailSubject = f'{request.user.username} is interested in {listing.model}'
-        emailMessage = f'Hi {listing.seller.user.username}, {request.user.username} is interested in your {listing.model} listing on AutoMax'
-        send_mail(emailSubject, emailMessage, 'ST.Django.Developer2114@gmail.com',
-                  [listing.seller.user.email, ], fail_silently=True)
+        # Construct the email details
+        email_subject = f'{request.user.username} is interested in {listing.model}'
+        email_message = (
+            f'Hi {listing.seller.user.username},\n\n'
+            f'{request.user.username} is interested in your {listing.model} listing on AutoMax.\n\n'
+            f'Reply to this email to get in touch with the buyer.'
+        )
+
+        # Send the email
+        send_mail(
+            email_subject,
+            email_message,
+            'ST.Django.Developer2114@gmail.com',  # Sender's email
+            [listing.seller.user.email],  # Recipient's email
+            fail_silently=False,  # Do not silently fail to ensure proper error handling
+        )
+
+        # Return success response
         return JsonResponse({
             "success": True,
+            "message": "Inquiry email sent successfully."
         })
+
     except Exception as e:
-        print(e)
+        # Log the exception
+        logger.error(f"Error while sending inquiry email: {e}")
+
+        # Return failure response with error details
         return JsonResponse({
             "success": False,
-            "info": e,
-        })
+            "error": str(e),  # Serialize the exception to a string
+        }, status=500)
 #                 send_mail(
 #     "AutoMax Testing",
 #     "Hello I am the Tester from AutoMax",
